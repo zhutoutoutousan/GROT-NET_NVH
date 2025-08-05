@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  grot-net-experiment:
+    # Development overrides
+    environment:
+      - DEBUG=1
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+    volumes:
+      # Additional development mounts
+      - ./tests:/app/tests
+      - ./docs:/app/docs
+    # Enable interactive mode for development
+    stdin_open: true
+    tty: true
+    # Add development tools
+    command: >
+      bash -c "
+        echo 'GROT-NET Development Environment' &&
+        echo 'Installing development dependencies...' &&
+        pip install pytest pytest-cov black flake8 mypy &&
+        echo 'Development tools installed!' &&
+        echo 'Available commands:' &&
+        echo '  - pytest (run tests)' &&
+        echo '  - black . (format code)' &&
+        echo '  - flake8 . (lint code)' &&
+        echo '  - mypy . (type check)' &&
+        echo '  - python youtube_engine_crawler.py (run crawler)' &&
+        echo 'Starting development shell...' &&
+        bash
+      " 

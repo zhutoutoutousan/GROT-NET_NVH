@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  grot-net-experiment:
+    build: .
+    container_name: grot-net-nvh
+    volumes:
+      # Mount data directories for persistence
+      - ./data:/app/data
+      - ./results:/app/results
+      - ./logs:/app/logs
+      - ./models:/app/models
+      - ./notebooks:/app/notebooks
+      # Mount datasets
+      - ./datasets:/app/datasets
+      # Mount source code for development
+      - .:/app
+      # Exclude unnecessary files
+      - /app/data/raw
+      - /app/data/processed
+      - /app/data/features
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+      - FFMPEG_BINARY=/usr/bin/ffmpeg
+      - FFPROBE_BINARY=/usr/bin/ffprobe
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    ports:
+      # Jupyter notebook port
+      - "8888:8888"
+      # TensorBoard port (if needed)
+      - "6006:6006"
+    working_dir: /app
+    command: >
+      bash -c "
+        echo 'GROT-NET Experiment Environment Ready!' &&
+        echo 'Available commands:' &&
+        echo '  - python youtube_engine_crawler.py (crawl engine sounds)' &&
+        echo '  - python setup_experiment.py (setup experiment structure)' &&
+        echo '  - jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root (start Jupyter)' &&
+        echo '  - python -c \"import librosa; print(\"librosa version:\", librosa.__version__)\"' &&
+        echo '  - python -c \"import yt_dlp; print(\"yt-dlp version:\", yt_dlp.version.__version__)\"' &&
+        echo '  - ffmpeg -version' &&
+        echo 'Starting interactive shell...' &&
+        bash
+      "
+    stdin_open: true
+    tty: true
+
+  # Optional: Jupyter service for interactive development
+  jupyter:
+    build: .
+    container_name: grot-net-jupyter
+    volumes:
+      - ./data:/app/data
+      - ./results:/app/results
+      - ./notebooks:/app/notebooks
+      - .:/app
+    ports:
+      - "8889:8888"
+    environment:
+      - PYTHONPATH=/app
+      - JUPYTER_ENABLE_LAB=yes
+    command: jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root --NotebookApp.token=''
+    profiles:
+      - jupyter
+
+  # Optional: Development service with hot reload
+  dev:
+    build: .
+    container_name: grot-net-dev
+    volumes:
+      - ./data:/app/data
+      - ./results:/app/results
+      - ./src:/app/src
+      - ./tests:/app/tests
+      - .:/app
+    ports:
+      - "5000:5000"
+    environment:
+      - PYTHONPATH=/app
+      - FLASK_ENV=development
+    command: python -m flask run --host=0.0.0.0 --port=5000
+    profiles:
+      - dev 
