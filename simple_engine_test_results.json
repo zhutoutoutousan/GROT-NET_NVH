@@ -1,0 +1,22 @@
+{
+  "simulation_params": {
+    "duration": 5.0,
+    "sample_rate": 44100,
+    "rpm_range": [
+      0,
+      5000
+    ],
+    "engine_orders": [
+      1.0,
+      2.0,
+      3.0,
+      4.0
+    ]
+  },
+  "stftsc_result": {
+    "estimated_rpm": 1456.7120622568093,
+    "error": 1043.2879377431907,
+    "percentage_error": 41.73151750972763,
+    "true_avg_rpm": 2500.0
+  }
+}

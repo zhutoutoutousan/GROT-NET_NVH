@@ -1,0 +1,25 @@
+{
+  "experiment_name": "GROT-NET",
+  "version": "1.0.0",
+  "setup_date": "2025-08-05T15:19:09.455202",
+  "data_collection": {
+    "target_healthy_samples": 300,
+    "target_faulty_samples": 200,
+    "min_duration": 10,
+    "max_duration": 300,
+    "sample_rate": 44100
+  },
+  "model_parameters": {
+    "gan_layers": 4,
+    "rnn_hidden_size": 512,
+    "rnn_layers": 3,
+    "learning_rate": 0.001,
+    "batch_size": 32
+  },
+  "training": {
+    "epochs": 100,
+    "validation_split": 0.15,
+    "test_split": 0.15,
+    "early_stopping_patience": 10
+  }
+}

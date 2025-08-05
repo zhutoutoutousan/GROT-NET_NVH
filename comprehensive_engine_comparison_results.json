@@ -1,0 +1,65 @@
+{
+  "simulation_params": {
+    "duration": 8.0,
+    "sample_rate": 44100,
+    "rpm_range": [
+      0,
+      5000
+    ],
+    "engine_orders": [
+      0.5,
+      1.0,
+      1.5,
+      2.0,
+      2.5,
+      3.0,
+      4.0,
+      6.0,
+      8.0
+    ]
+  },
+  "deep_learning": {
+    "available": true,
+    "metrics": {
+      "method": "Deep Learning",
+      "mae": 11878.483215332031,
+      "rmse": 12407.589682561458,
+      "mean_percentage_error": 76490.49575223213,
+      "median_percentage_error": 597.9712239583332,
+      "max_error": 15280.66015625,
+      "min_error": 6075.53076171875,
+      "std_error": 3584.678260859788,
+      "r2_score": -74.06811452016422,
+      "estimated_rpm_range": [
+        6075.53076171875,
+        19607.39453125
+      ],
+      "true_rpm_range": [
+        0.0,
+        4375.0
+      ]
+    }
+  },
+  "stftsc": {
+    "available": true,
+    "metrics": {
+      "method": "STFTSC",
+      "mae": 1250.0,
+      "rmse": 1465.7549249448218,
+      "mean_percentage_error": 31316.190476190477,
+      "median_percentage_error": 38.0952380952381,
+      "max_error": 2500.0,
+      "min_error": 4.547473508864641e-13,
+      "std_error": 765.4655446197431,
+      "r2_score": -0.04761904761904745,
+      "estimated_rpm_range": [
+        2500.0,
+        2500.0
+      ],
+      "true_rpm_range": [
+        0.0,
+        4375.0
+      ]
+    }
+  }
+}

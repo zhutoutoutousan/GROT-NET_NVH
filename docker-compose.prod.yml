@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  grot-net-experiment:
+    build: .
+    container_name: grot-net-nvh-prod
+    restart: unless-stopped
+    volumes:
+      # Production data persistence
+      - grot_net_data:/app/data
+      - grot_net_results:/app/results
+      - grot_net_models:/app/models
+      - grot_net_logs:/app/logs
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+      - PRODUCTION=1
+    # Remove interactive mode for production
+    stdin_open: false
+    tty: false
+    # Production command
+    command: python youtube_engine_crawler.py --max-results 500
+
+  # Optional: Monitoring service
+  monitoring:
+    build: .
+    container_name: grot-net-monitoring
+    restart: unless-stopped
+    volumes:
+      - grot_net_logs:/app/logs
+      - grot_net_results:/app/results
+    environment:
+      - PYTHONPATH=/app
+      - MONITORING=1
+    command: python -c "import time; print('Monitoring GROT-NET experiment...'); time.sleep(3600)"
+    depends_on:
+      - grot-net-experiment
+
+volumes:
+  grot_net_data:
+    driver: local
+  grot_net_results:
+    driver: local
+  grot_net_models:
+    driver: local
+  grot_net_logs:
+    driver: local 
