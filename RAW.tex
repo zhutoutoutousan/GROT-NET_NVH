@@ -1,0 +1,292 @@
+\documentclass[journal,10pt]{IEEEtran}
+\ifCLASSINFOpdf
+\else
+\fi
+\setlength{\parskip}{0em}
+\setlength{\parindent}{2em}
+\usepackage{amssymb} 
+\usepackage{indentfirst}
+\usepackage{ifpdf}
+\usepackage{float}
+\usepackage[justification=centering]{caption}
+\usepackage{amsmath}
+\usepackage{array}
+\usepackage{url}
+\usepackage{diagbox}
+\ifCLASSINFOpdf
+  \usepackage[pdftex]{graphicx}
+
+\hyphenation{op-tical net-works semi-conduc-tor}
+
+\begin{document}
+
+\graphicspath{ {./Images/} }
+\title{ GROT-Net: GAN-RNN-based Order Tracking Network for NVH Analysis }
+% \author{Tian Shao, %~\IEEEmembership{Member,~IEEE,}
+%         Jing Li, Yue Zhang, %~\IEEEmembership{Fellow,~OSA,}
+%         Zigan Wang, Liucun Zhu, Jinliang Li}%,~\IEEEmembership{Life~Fellow,~IEEE}}% <-this % stops a space
+% \thanks{M. Shell was with the Department
+% of Electrical and Computer Engineering, Georgia Institute of Technology, Atlanta,
+% GA, 30332 USA e-mail: (see http://www.michaelshell.org/contact.html).}% <-this % stops a space
+% \thanks{J. Doe and J. Doe are with Anonymous University.}% <-this % stops a space
+% \thanks{Manuscript received April 19, 2005; revised August 26, 2015.}}
+
+% \markboth{Advanced Engineering Informatics}%
+% {Shell \MakeLowercase{\textit{et al.}}: Bare Demo of IEEEtran.cls for IEEE Journals}
+
+\maketitle
+
+\input{Chapters/1_abstract}
+\input{Chapters/2_introduction}
+\input{Chapters/3_methodology}
+\input{Chapters/4_experiments}
+\input{Chapters/5_conclusion}
+
+\ifCLASSOPTIONcaptionsoff
+  \newpage
+\fi
+\bibliographystyle{IEEEtran}
+\bibliography{./bibliographies/NVH}
+\end{document}
+
+
+\begin{abstract}
+    In the context of automotive Noise, Vibration, and Harshness (NVH) analysis for vehicle fault detection, the acquisition of rotational per minute (rpm) data via tachometers is indispensable for facilitating advanced analytical techniques, including order tracking and digital resampling. In this study, we propose an innovative approach that involves the training of GROT-Net to directly infer tracked orders from spectrogram data. The training process begins with the acquisition of vibration signals from automobile engine soundtracks, followed by the extraction of instantaneous frequency using the Short-Time Fourier Transform with Seam Carving (STFTSC) algorithm. Subsequently, the model is trained to reconstruct the training dataset, wherein the tracked orders are treated as the output data, while each slice of the spectrogram constitutes the input data.
+    The model is trained on a dataset comprising 300 instances of healthy engine sounds and 200 instances of faulty engine sounds, which were collected from YouTube. It is important to note that the achieved performance qualifies as state-of-the-art (SOTA) given the current absence of deep learning methods that can produce comparable results. Upon evaluation using a separate test dataset, representing up to 30\% of the total data, GROT-Net exhibits a Root Mean Square Error (RMSE) score of 0.056 when compared to the STFTSC method. This remarkable performance underscores its potential for further refinement and training on larger datasets. \end{abstract}
+    \begin{IEEEkeywords}
+    NVH analysis, Order Tracking, Deep Learning, rpm estimation
+    \end{IEEEkeywords}
+    
+    \IEEEpeerreviewmaketitle
+
+    \section{Introduction}
+Due to advancements in production technology, mechanical structures now feature intricate components like bearings and gears, prone to failures with potential economic losses and safety risks. Effective condition monitoring for critical components is crucial. Traditional methods rely on stationary signal analysis, assuming constant conditions. However, in practical scenarios, rotating machinery operates non-stationarily, requiring consideration of variable-speed conditions. Instantaneous speed is vital for fault diagnosis methods, necessitating precise determination of rotational speed. Current techniques involve time-frequency and order analysis, yet advanced Deep Learning methods like Recurrent Neural Networks and Generative Adversarial Networks remain underexplored in order analysis. The article introduces the "tacholess" measurement concept and explores the GROT-Net framework for Order Tracking Technique, establishing connections between GANs, RNNs, and tacholess speed estimation. A comparative analysis of Root Mean Square Error across methodologies concludes the exposition.
+\subsection{Accurate Measurement of Shaft Speed and its cost}
+
+In specialized applications like orbiter control and artillery systems, precise speed measurement is crucial, with errors tightly constrained. Conventional methods, such as speed encoders, introduce uncertainties and extended installation time. Tachometers, though accurate, incur costs and are time-consuming. Three primary speed measurement methods—magnetic, optical, and inductive—are employed, each with advantages and limitations. Ongoing sensor advancements drive the need for dedicated hardware systems. The research focuses on a non-tachometer-based (tacholess) approach for accurate rotational speed information. The influence of speed measurement accuracy on Order Analysis is emphasized, illustrating the potential impact of overlooking supplementary rpm components on machinery failures. Traditional Order Tracking techniques like Computed Order Tracking, Digital Resampling, and Time Variant Discrete Fourier Transform have limitations in phase angle estimation or manual procedures, motivating the exploration of advanced methods for improved precision in speed measurement and subsequent Order Analysis.\cite{measurement,nontac}
+    
+\subsection{Current research on tacholess methods of Order tracking}
+\paragraph{Rpm-estimation based}
+As early as in 1992, C. Schauder described a model-reference adaptive system (MRAS) to estimate the induction motor speed from measured terminal voltages and currents \cite{non3}. In 2003, V. Vasic, S. N. Vukosavic, and E. Levi utilized the non-VSS method to predict the stator resistance for speed sensorless rotor flux-oriented induction motor drives \cite{non1}. In 2007, D. Levine, B. R. Reddy, and S. V. Kumar used a BLDC motor model to estimate the speed and rotor position using an extended Kalman filter. The results are useful for static rpm situations but inadequate for acceleration and deceleration situations \cite{non4}. In the same year, S. Gade, T. F. Perserson, H. Herlufsen, and H. K. Hansen shared their practical experience with RPM estimation using the Autotracker algorithm \cite{non5}. In 2017, Y. G. Chen, F. Zhang, and S. X. Liu utilized the ANFIS model to estimate rpm, but details are not presented \cite{ZHONGGUO}. In 2018, J. Zhong, S. Zhong, Q. Zhang, and Z. Peng used a double-sine-varying-density fringe pattern to measure instantaneous rotational speed \cite{non2}. 
+
+\paragraph{Tacholess methods}
+In 2013, M.Zhao et al. used a chirplet-based method to estimate instantaneous frequency \cite{tacholess2013}. 
+In 2020, L. Xu et al suggested a tacholess order tracking method based on Inverse Short Time Fourier Transform and Singular Value Decomposition\cite{tacholess2020}.
+In 2022, H. Zhao et al proposed a tacholess order tracking method based on extended intrinsic chirp component decomposition\cite{tacholess2022}
+In 2023, B. Y. Wu et al introduced Seam carving methods for instantaneous frequency estimation, bringing the STFTSC algorithm to order tracking realm\cite{wu2022instantaneous}.
+while J. Ding et al. introduced a slope synchronous chirplet transform for taco-less order tracking of rotating machines\cite{tacholesss_slope_synchronous}.
+
+From their research, we can learn that:
+\begin{itemize}
+    \item Using motor model highly precise rotational speed measurement still has a long way to go.
+    \item Autotracker algorithm and Bayes' theorem have been proved useful in accurate rotational speed measurement. However, the width of the crucial RPM distribution still needs to be manually selected.
+    \item No end-to-end tacholess solving method has been proven useful yet, while Deep learning methods for order tracking is largely an uncharted land.
+\end{itemize}
+
+\section{Methodology}
+\subsection{Overview}
+The structure of our work is elucidated in Fig. \ref{WORK_ARCHITECTURE}, encompassing three major components and two phases:
+
+In our study, data acquisition involves two sources: a Dynamometer for N.V. Property Measurement and an nvh-crawler for engine sounds from YouTube. The Dynamometer uses rpm encoder and vibration sensor, with Automax Order Tracking Suite converting analog signals to digital for further analysis. The nvh-crawler extracts 300 healthy and 200 noisy engine sounds, downloaded and converted to WAV files. Feature extraction employs Short-Term Fourier Transform (STFT) and the STFTSC algorithm for order analysis. Noise extraction from STFT spectrograms is performed for GAN training. GROT-Net design integrates Recurrent Neural Network (RNN) for tracking orders consistently and a Generative Adversarial Network (GAN) to reduce background noise in internet-sourced engine sounds. The training phase involves using 70\% of the dataset for training GAN and RNN, while the testing phase evaluates the systematic performance of GROT-Net and STFTSC using Root Mean Square Error (RMSE) as a criterion, without normalizing peaks for GROT-Net and setting RNN to $no\_grad$ during testing.
+
+\begin{figure*}[h]
+\centering
+%\includegraphics[width=15cm,height=10cm]{Systemgram}
+\includegraphics[width=15cm,height=10cm]{Images/WORK_STRUCTURE.png}
+\caption{Our work comprises three fundamental components: Data Acquisition, Feature Extraction, and the GROT-Net model. Additionally, it encompasses two distinct phases: the Testing Phase and the Training Phase.}
+\label{WORK_ARCHITECTURE}
+
+\end{figure*}
+%%%% this figure should be last put into the right position
+
+\subsection{Data acquisition}
+The data acquisition procedure initiates with the application of a tachometer for the calculation of rotational speed. It is important to note that we indeed utilize the M/T method, a common practice employed for converting impulse signal series into rotational speed. Additionally, we leverage a 90 kW Dynamometer for the measurement of Noise and Vibration (N.V.) properties. This comprehensive approach ensures the acquisition of accurate and relevant data for our research.
+\paragraph{Short-Time Fourier transform(STFT)}
+The short-time Fourier transform (STFT) is employed as a discrete counterpart to extract frequency components within a short window (frame) size in discrete-time analysis. The input sequence is partitioned based on parameters like the window size (\textit{wlen}) and hopping size (\textit{hop}), facilitating overlapping windows. The Fourier transform is computed for each segmented sequence, accumulating outcomes in a matrix containing magnitude and phase information. The STFT equation is expressed as a sum over the input sequence multiplied by the window function. In digital signal processing, the discrete Fourier transformed sequence is defined, and for the vibration sequence $V(nT)$ in our case, the formula is derived using the recursive FFT algorithm \cite{DFFT, RFFT}. The algorithm involves sequence generation, calculating the FFT of each windowed sequence, and updating the results.
+\paragraph{Feature extraction: Seam Carving Algorithm}
+After discret STFT, we get a set of FFT chunks that contain the instantaneous frequency information. The equation for the discrete STFT is as follows:
+\begin{equation}
+\label{equation_state_transition}
+    S(n\Delta{t}, f) = \sum_{k=-\infty}^{+\infty} X(k)g*(k-n\Delta t)e^{-j2\pi kf}
+\end{equation}
+where in the provided equation, $\Delta t = \frac{1}{f_z}$ represents the sampling time interval, $n$ corresponds to the time series, $X(k)$ denotes the discrete representation of the signal $X(t)$, and $g(k)$ stands for the discrete representation of the window function $g(t)$. \\
+
+\indent From Equation \ref{equation_state_transition}, the discrete STFT result is a 2D matrix, containing the information of time and frequency. The STFT spectrum is defined as a square of the modulus of $S$, as shown in Equation \ref{equation_frequency_spectral_density} which represents the time-frequency energy distribution, also known as the instantaneous frequency spectral density.
+
+\begin{equation}
+\label{equation_frequency_spectral_density}
+    P(n\Delta t, f)={|S(n\Delta t, f)|}^2
+\end{equation}
+
+\indent With the spectrogram depicting time-varying frequencies now at our disposal, there exist two prominent methods for extracting the dominant frequency and generating the order analysis diagram: the Polynomial Chirplet Transform (PCT) \cite{PCT} and the short-time Fourier transformation with seam carving (STFTSC). \\
+\begin{figure}[h]
+\centering
+\includegraphics[width=5.6cm,height=9cm]{Images/PEAK_EXTRACTION.png}
+\caption{Flowchart of instantaneous frequency estimation by STFTSC algorithm}
+\label{STFTSC_flowchart}
+\end{figure}
+\indent To implement the Seam Carving algorithm to our use case, we use the STFTSC instantaneous frequency estimation algorithm presented by the previous study\cite{wu2022instantaneous}
+, which is shown in Fig. \ref{STFTSC_flowchart}.
+ The proposed algorithm for analyzing the vibration signal involves a series of steps: (1) Time–frequency analysis through Short-Time Fourier Transform (STFT) to generate the time-frequency representation and computation of spectral density of instantaneous frequency, (2) Calculation of the energy function of the spectrum using grayscale conversion and Sobel operator, revealing multiple ridges corresponding to different instantaneous frequencies, (3) Initial value selection by choosing the lowest energy point on the edge of the energy sum matrix as the starting point for the targeted ridge, representing the instantaneous fundamental frequency, (4) Extraction of the targeted ridge using Dynamic Programming (DP) as an optimization problem to address noise and interference, and (5) Extraction of the instantaneous frequency by aligning the coordinates obtained from the targeted ridge with the original coordinates of the vibration signal's instantaneous frequency curve. The algorithm aims to accurately extract the instantaneous frequency curve of the vibration signal, overcoming challenges posed by noise and interference in the time-frequency spectrum.
+\subsection{A look into GROT-Net}
+\paragraph{The significance of GROT-Net-based network towards rpm estimation}
+In our study, the network inputs are processed and refined from the data acquisition system. However, due to the unpredictability of the hardware system, the logical error of sensors, electromagnetic interference, etc., would cause unexpected noise within the input sequences. If we can formulate a neural network that learns the patterns of the sound of the output frequency map and generates a counter-noise compensation into the overall neural network input, then the effect of the noise will be significantly reduced or even eliminated.
+\paragraph{Recurrent neural network}
+A recurrent neural network(RNN) contains the delayed feedback loop which allows the network to memorize a certain network state for the next time sequence. For our case, there is a continuity of the frequency peak value, which indicates the potential efficiency in rpm estimation if a network with short-term memory is introduced. There is a rich repertoire of RNNs for us to choose from, such as the Input-Output Recurrent Model, Nonlinear autoregressive with exogenous inputs(NARX) model, State-Space Model, and so on. Among all those kinds of architectures, we choose \textit{recurrent multilayer perceptron}(RMLP) while the overall structure is shown in Fig. \ref{figure_rnn_arch}, which has one or more hidden layers (computational layer) with recurrent loop and feedforward layers before the estimation output. In the \textit{Experiment} section, we will test its performance by changing the number of the computation layers and neurons. 
+\cite{NN,RNN1,biotech}\\
+\indent In order to express the network in mathematical form, we resort to the universal approximation theorem.\cite{NN} Our recurrent network, assumed to be \textit{noise free}, can be expressed by the pair of nonlinear equations:
+\begin{equation}
+    x_{n+1}=\Phi(W_{a}X_n+W_{b}u_n)
+\end{equation}
+\begin{equation}
+    y_n = W_{c}x_n
+\end{equation}
+In which $W_a$ is a $q\times q$ matrix, $W_b$ is a $q\times m$ matrix, $W_c$ is a $p\times q$ matrix, and $\Phi:\mathbb{R}^q\rightarrow \mathbb{R}^q$ denotes a diagonal map that can be expressed by:
+\begin{gather}
+\Phi:
+\begin{bmatrix}
+x_1\\
+x_2\\
+...\\
+x_q
+\end{bmatrix}
+\rightarrow
+\begin{bmatrix}
+\phi(x_1)\\
+\phi(x_2)\\
+...\\
+\phi(x_q)
+\end{bmatrix}
+\end{gather}
+In the equation above, $\phi:\mathbb{R}\rightarrow \mathbb{R}$ denotes some memoryless, componentwise nonlinearity, while the spaces $\mathbb{R}^m,\mathbb{R}^q$ and $\mathbb{R}^p$ are the \textit{input space, statespace},and \textit{output space}, respectively. Also, \textit{q} is the dimensionality of the state space and \textit{m} denotes the number of inputs and \textit{p} is the number of outputs.\cite{NN}\\
+\indent The $\phi(x)$ activation function is usually takes the form of a hyperbolic tangent function:
+\begin{equation}
+    \phi(x) = tanh(x) = \frac{1-e^{-2x}}{1+e^{-2x}}
+\end{equation}
+We can use a logistic function for $\phi(x)$ as well.
+\paragraph{Generative Adversarial Networks(GANs)}
+In our rotational speed estimation network, one of the non-negligible issues is the input noise intervention. If we can extract the feature of the input noise, and train a network to generate a counter-noise to battle the interference, it is possible that we could improve the overall performance of the estimation. Along with this idea, we came up with a noise feature extraction algorithm that is illustrated in Fig. \ref{WORK_ARCHITECTURE} and Fig. \ref{figure_gan_arch}, which can extract the noise map from the frequency map, and then we train the network with a real-time noise map and use the trained network to simulate the noise as the input of following deep convolution network. After that, the output sequence acts as noise input of the RNN noise input.\cite{GAN1} \\
+
+\indent The overall GROT-Net architecture is illustrated in Fig. \ref{WORK_ARCHITECTURE}.
+
+\indent In which we have a GROT-Net with the input of a sequence of randomly chosen STFT test data with the resonant peaks. Hopefully, GANs extract the sophisticated feature in the signal and generate the noise image that we need to train the discriminator. The specifics are shown in Fig. \ref{figure_gan_arch}
+\subsubsection{GROT-Net configuration}
+The model we proposed is a recurrent neural network with GROT-Net output together with the processed feature inputs as the overall network inputs as shown in Fig. \ref{WORK_ARCHITECTURE}. In the proposed network, we train the discriminator(D) to reach the non-zero-sum game between the generator(G)-generated noise-map and the input real noise-map in order to simulate the noise environment.\cite{NN, RNNGAN}We define the subsequent loss functions $L_D$ and $L_G$:
+\begin{equation}
+    L_G=\frac{1}{m}\sum_{i=1}^m log(1-D(G(z^{(i)})))
+\end{equation}
+\begin{equation}
+    L_D=\frac{1}{m}\sum_{i=1}^m[-logD(x^{(i)})-(log(1-D(G(z^{(i)}))))]
+\end{equation}
+Define $k$ as the number of dimensions of the random sequences, then $x^{(i)}$ denotes the training sequence.$z^{(i)}$ is a sequence of uniform random vectors in $[0,1]^k$.\\
+\indent The input to each cell in G is the $1\times 1024$ interpolated vector randomly chosen from the resampled $N\times N$ frequency map, connected with the previous cell output. \\
+\indent We know that we can use back-propagation to teach them and use forward-propagation to produce noise samples without involving another component. However, its original version is not easy to train. However, the improved version, WGAN-GP\cite{WGANGP}\cite{GANA}, shows improved performance in learning the distribution of noise. The objective function for our goal is:
+\begin{equation}
+\begin{aligned}
+    \mathcal{L}_{GAN}={} & \mathbb{E}_{\widetilde{x}~\mathbb{P}_g}[D(\widetilde{x}]- \mathbb{E}_{x~\mathbb{P}_r} [D(x)]\\
+    & + \lambda \mathbb{E}_{\hat{x}~\mathbb{P}_{\hat{x}}} [(||\nabla_{\hat{x}} D(\hat{x})||_2-1)^2]
+\end{aligned}
+\end{equation}
+where $\mathbb{P}_r$ is the distribution concerning a bunch of estimated noise blocks $V$, $\mathbb{P}_g$ denotes the generator distribution, $\mathbb{P}_{\hat{x}}$ is defined as a distribution which samples evenly and linearly between every adjacent two points sampled from $\mathbb{P}_r$ and $\mathbb{P}_g$.\cite{WGANGP}\cite{IMAGECHEN}\\
+\indent The specific configuration of the GAN is shown in the figure below.
+\begin{figure}[h]
+\centering
+\includegraphics[width=6cm,height=5cm]{Images/GAN_ARCHITECTURE.png}
+\caption{Overview of the GAN model composed of a discriminator and a generator with four fully connected layers}
+\label{figure_gan_arch}
+\end{figure}
+To obtain noise output, we obtain two sets of data the way to obtain which are shown in Fig. \ref{WORK_ARCHITECTURE}. One is GAN output noise. Another one is a randomly chosen frequency map in the dataset coming from the data acquisition system.\\
+\indent To obtain the training dataset pair ${X',Y'}$, utilizing the set $V'$ generated by GAN, we decompose the set of frequency-map-based 'image' into a bunch of $d\times d$ patches. Rearrange the patches accordingly we obtain the training input set $X'={x'_1,x'_2,...,x'_e}$  Then we add GAN noise output in $V'$ to the corresponding part in $X'$ randomly to get the training output set $Y'={y'_1,y'_2,...,y'_f}$,where $y'_1=x'_{j}+v'_{k}$. Then we obtain the paired training dataset $\{X', Y'\}$ from the sets $X'$ and $Y'$.\\
+\begin{figure}[h]
+\centering
+\includegraphics[width=8cm,height=5.5cm]{Images/RNN_ARCHITECTURE.png}
+\caption{Our RNN architecture for tracking order, which includes reusing the hidden layer to keep track of the previously tracked location of order in the frequency domain to amplify the peaks thus increasing training effectiveness}
+\label{figure_rnn_arch}
+\end{figure}
+
+
+
+
+\section{Experiments}
+In a nutshell, with the process of feature extraction presented in Fig. \ref{WORK_ARCHITECTURE}, together with the RNN model in Fig. \ref{figure_rnn_arch} \, we built a rotational speed estimation system.\\
+\indent In the training stage, 80$\%$ of the data, forging the $X$ feature matrix and rotational speed sequence were extracted and labeled. The feature matrix and the reference rpm are used as training sets.\\
+\indent For model testing and evaluation, the rpm was estimated by the trained RNN-GAN-CNN model. At first, we illustrate the network configuration as well as metrics for evaluation. Next, we present the experiment results. During the experiments, we first optimize the setups for DNN structure and configurations. To test the performance of the trained network, we compare the results with the Bayesian statistical framework.
+
+\subsection{Experimental setup}
+The vibration and rpm data collected by our testing prototype as well as the online database were used in this experiment. The objective of this study is to predict the rotational speed of the rotating machines with vibration sensors only.
+\\\indent In this acquisition system, we used both the proprietary Automax testing suite and customized approaches using Ti TMS320F28335 as our DSP processor and utilized the embedded EQEP module to calculate the rotational speed based on the encoded output pulses. We use the integrated A/D module in the chip to complete the vibration signal acquisition with a sampling frequency of 75kHz. The mandatory signal modulator is implemented for the vibration sensor. The nominal operating speed of the rotor is 3000 rpm. Also, we developed a web-based YouTube crawler for gathering 300 healthy and 200 faulty engine soundtracks to enrich the dataset size.
+
+\subsection{Evaluation metrics}
+To evaluate the performance of our model, we have selected the Root Mean Square Error (RMSE) as our evaluation metric.
+\subsection{Experiment results}
+\subsubsection{Feature extraction}
+Fig. \ref{figure_original_singal_90} illustrates the rotor spectrogram obtained from the 90 kW Dynamometer. It is apparent that the spectrogram exhibits a considerable amount of noise, primarily attributable to the relatively small window size employed. This noise can potentially elevate the error rate during feature extraction, particularly when attempting to track spectral peaks.
+\begin{figure}[h]
+\centering
+\includegraphics[width=8.6cm,height=5cm]{Original_amplitude_spectrogram_of_the_signal}
+
+\caption{
+Vibration spectrogram of a step rotor shaft with cog group connected to 90 kW Dynamometer, 0-5000 rpm, 10 seconds, window length: 512, Original signal
+}
+\label{figure_original_singal_90}
+\end{figure}
+
+To better the signal quality of the frequency map shown in Fig. \ref{figure_original_singal_90}, we set the sampling frequency to 3 kHz, and the window size(frame size) to 512 sample points, with the hopping size as 16 sample points. It can be noticed that reducing the frame size will increase not only the clarity of the peak trait but also the noise. The initial few seconds' data do not show enough clarity and thus need to be obtained at a lower frame rate. Then we experiment with different STFT settings. In Fig. \ref{figure_signal_512_denoised}, we tried out different window lengths to clear out the noise with the frame size remaining 512 and GAN denoising method.
+\begin{figure}[h]
+\centering
+\includegraphics[width=8.6cm,height=5cm]{Amplitude_spectrogram_of_the_signal(512)}
+
+\caption{Vibration spectrogram of a step rotor shaft with cog group connected to 90 kW Dynamometer, 0-5000 rpm, 10 seconds, window length: 512, GAN denoised}
+\label{figure_signal_512_denoised}
+\end{figure}
+We also tried the frame size being 512, it can be observed that the optimal configuration can be obtained by training.
+In Fig. \ref{figure_signal_512_denoised}, we changed our frame size to 512 with the GAN denoising procedure, it is observed that the peak signals in the middle part have gained more clarity.\\
+Regarding the hardware approach, we also crawled healthy engine sounds and faulty engine sounds from YouTube as additional testing.
+
+We set the maximum frequency to 8000Hz, hop length to 512, Hann window length to be 1024, also the pad mode to be reflected, then we get the rectified signal and mel spectrogram as shown in Fig. \ref{RNN_PREDICTED_ORDER}.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=8cm,height=3.5cm]{RNN_PREDICTED_ORDER}
+\caption{Example of an engine testing sound amplitude graph consisting of two tests of maximum rpm runs and order tracking diagram returned from RNN output of GROT-Net}
+\label{RNN_PREDICTED_ORDER}
+\end{figure}
+
+
+\indent With more of these experiments, as is shown in Fig. \ref{WORK_ARCHITECTURE}, we find the local maxima and its peripherals and constantly verify it by checking its consistency with the nearby peak distance. Using a variety of frame sizes and filtering combinations, the STFTSC algorithm found the correct local maxima and its index as feature input that shows continuity to the adjacent values.
+\subsubsection{Optimization of feature configuration and network structure}
+In this section, the optimal feature configuration and network structure are determined by the development set. First, we conduct the experiments using various combinations of sampling rates, frame size, and hopping size. Then we use GROT-Net to generate the noise and then use the noise as a countermeasure.
+\indent Next, we looked into the effectiveness of the introduction of GROT-Net. First, as shown in Fig. \ref{WORK_ARCHITECTURE}, by normalizing the STFTSC algorithm, we obtained the noise signal from the given spectrogram.
+In this case, we directly implement the configurations shown in Fig. \ref{WORK_ARCHITECTURE}. Then we get the predicted GAN generator output image.
+\indent After we have obtained the denoised STFT signal, we chunk the signal with respect to each timestamp and feed them to RNN while the optimizer input is the order spectrogram obtained by 90kw dynamometer or STFTSC algorithm for training.
+\subsubsection{Comparison of different tacholess order tracking methods with a reference method as standard}
+For the final model evaluation and results comparison, we use the data obtained from the testing phase as shown in Fig. \ref{WORK_ARCHITECTURE}. In order to compare and contrast all major tacholess methods used in order tracking i.e. STFTSC method, PCT method, and GROT-Net method, we need to separate our comparison scheme into two parts: 1. For the testing output obtained from 90kw Dynamometer, we use Automax Order Tracking suite as the reference method, outputting STFT data to both STFTSC and GROT-Net to compare the results between them. 2. For the testing output obtained from nvh-crawler, we use PCT methods\cite{PCT} as our reference method while comparing STFTSC and GROT-Net methods as for data obtained from the internet, there aren't any hardware-based reference methods to choose from.\\
+\indent As we can see in Table \ref{table_comparison_automax}, the results of performances by STFTSC and PCT algorithm and GROT-Net with reference to Automax Order Tracking suite shows that GROT-Net has less maximum error between estimated and actual results at 0.124\% and the RMSE value of 0.056Hz.
+
+\begin{table} \label{spar}
+\centering
+\begin{tabular}{|l|l|l|l|}
+\hline
+Method & STFTSC & PCT & GROT-Net \\ \hline
+\begin{tabular}[c]{@{}l@{}}Comparison of the maximum error\\ between the estimated and \\ actual results(\%)\end{tabular} & 0.568 & 3.812 & \textbf{0.124} \\ \hline
+\begin{tabular}[c]{@{}l@{}}The root-mean-square \\ error of the estimated \\ and actual results(Hz)\end{tabular} & 0.421 & 0.988 & \textbf{0.056} \\ \hline
+\end{tabular}
+\caption{Comparison of the order tracking results of the STFT signal obtained by 90 kW Dynamometer with Automax order tracking suite as reference}
+\label{table_comparison_automax}
+\end{table}
+As for the testing output from nvh-crawler, as shown in Table \ref{table_comparison_crawler}, due to the randomity and uncontrolled nature of the data obtained from the internet, we can observe that both STFTSC and GROT-Net methods has higher maximum error percentage between the estimated and actual results and RMSE value, whereas GROT-Net has an edge by obtaining a 0.345\% maximum estimate-actual error and RMSE value of 0.684 Hz.
+\begin{table} \label{spar}
+\centering
+\begin{tabular}{|l|l|l|}
+\hline
+Method & STFTSC & GROT-Net \\ \hline
+\begin{tabular}[c]{@{}l@{}}Comparison of the maximum error\\ between the estimated and \\ actual results(\%)\end{tabular} & 0.764 & \textbf{0.345} \\ \hline
+\begin{tabular}[c]{@{}l@{}}The root-mean-square \\ error of the estimated \\ and actual results(Hz)\end{tabular} & 1.248 & \textbf{0.684} \\ \hline
+\end{tabular}
+\caption{Comparison of the order tracking results of the STFT signal by nvh-crawler with PCT method as reference}
+\label{table_comparison_crawler}
+\end{table}
+
+
+\section{Conclusion}
+In this paper, we introduced GROT-Net, an innovative approach for order tracking in automotive Noise, Vibration, and Harshness (NVH) analysis, leveraging deep learning to directly infer tracked orders from spectrogram data without relying on traditional tachometers for rpm data. The methodology involved collecting vibration signals from engine soundtracks, extracting instantaneous frequency using the Short-Time Fourier Transform with Seam Carving (STFTSC) algorithm, and training the model on a dataset of healthy and faulty engine sounds. GROT-Net demonstrated state-of-the-art performance with a Root Mean Square Error (RMSE) score of 0.056 compared to the conventional STFTSC method. Future research avenues include developing a neural network to control STFT parameters for optimized order analysis, integrating GROT-Net into real-time vehicular systems, and exploring noise reduction techniques for improved accuracy in NVH analysis. The introduction of GROT-Net represents a significant advancement in NVH analysis, offering promising results and paving the way for further improvements in accuracy and efficiency in automotive fault detection.
